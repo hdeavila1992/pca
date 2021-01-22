@@ -2,143 +2,155 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun May 17 15:11:32 2020
+Modified on Sun Aug 02 15:29:17 2020
 
 @author: hernando
-@free to write your name here, if you want to collaborate :)
+@collaborator: paternina
 """
-"NURBS"
+#"NURBS"
 
 import numpy as np
-from mpl_toolkits import mplot3d
-import matplotlib.pyplot as plt
 import sys
 
-def knot (n,p):
-    u0=np.array([0]*(p+1))
+#tolerance for knot vector
+tol = 1e-5
+
+def knotGeneratorUniform(n,p):
     if n<p:
         print ("Fatal error")
-        sys.exit("no such vector curve exist, pls try n greater than p")
+        sys.exit("No such vector curve exists, please try n greater than p")
+        return np.zeros(p+1)
     else:
-        j=np.arange(1,n-p+1)
-        ujp=j/(n-p+1)
-        um=np.array([1]*(p+1))
-        k=np.concatenate([u0,ujp,um])
-        
-    return k
+        ustart = np.zeros(p+1)
+        umid = np.zeros(n-p)
+        for j in range(1,n-p+1):
+            umid[j-1] = j/(n-p+1)
+        uend = np.ones(p+1)
+        return np.concatenate([ustart,umid,uend])
 
-def N0(U,u):
-    #U: el vector de nudos
-    #u: valor del parametro ente 0 y 1
-    N0=((U[0:-1]<=u)*(u<U[1:]))*1
-    return N0
-
-def N_1(N0,U,p,u):
-    I=0
-    N_1=np.array([0.0]*(len(N0)-1))
-    for i in range(len(N0[:-1])):
-        num1=u-U[i]
-        num2=U[i+p+1]-u
-        den1=U[i+p]-U[i]
-        den2=U[i+p+1]-U[i+1]
-        if den1==0:
-            A=0
-        else:
-            A=num1/den1
-        if den2==0:
-            B=0
-        else:
-            B=num2/den2
-        N_1[I]=A*N0[i]+B*N0[i+1]# 
-        I=I+1
-        if u==1:
-            N_1[-1:]=1
-    return N_1
-
-def N(N0,U,p,u):
-    for i in range(p):
-        N0=N_1(N0,U,(i+1),u)
-    return N0    
-
-def ugen(a,b,step):
-    if 0<=a and b<=1:
-        u=rango=np.arange(a,b,step,dtype=np.float64)
+def knotGeneratorChord(n,p,tv):
+    if n<p:
+        print ("Fatal error")
+        sys.exit("No such vector curve exists, please try n greater than p")
+        return np.zeros(p+1)
     else:
-        print('Los rangos no pertenecen al dominio de la funcion')
-        sys.exit("Error message")
-    return u  
-        
-        
-def b_spline(u,px,p):
-    U=knot(len(px)-1,p)
-    cx=np.array([0.0]*len(u))
-    for i in range(len(u)):
-        Nn0=N0(U,u[i])
-        Nn=N(Nn0,U,p,u[i])
-        cx[i]=px@Nn
-    return cx
+        ustart = np.zeros(p+1)
+        uend = np.ones(p+1)
+        umid = np.zeros(n-p)
+        for j in range(1,n-p+1):
+            ui = 0
+            for i in range(j,j+p):
+                ui += tv[i]
+            ui *= (1.0/p)
+            umid[j-1] = ui
+        return np.concatenate([ustart,umid,uend])
 
-def b_spline2d(u,v,px,p,q):
-    T=px.shape
-    Ui=knot(T[0]-1,p)
-    Uj=knot(T[1]-1,q)
-    cx=np.zeros([len(u),len(v)])
-    for i in range(len(u)):
-        for j in range(len(v)):
-            Nn0_i=N0(Ui,u[i])
-            Nn0_j=N0(Uj,v[j])
-            Nn_i=N(Nn0_i,Ui,p,u[i])
-            Nn_j=N(Nn0_j,Uj,q,v[j])
-            cx[i,j]=Nn_i@px@Nn_j 
-    return cx
-        
-        
-def NURBS(u,px,w,p):
-    U=knot(len(px)-1,p)
-    cx=np.array([0.0]*len(u))
-    for i in range(len(u)):
-        Nn0=N0(U,u[i])
-        Nn=N(Nn0,U,p,u[i])
-        cx[i]=(px@(Nn*w))/(Nn@w)
-    return cx
+#U: knot vector
+#u: parameter between 0 and 1
+def findKnotInterval(U,u):
+    for i in range(len(U)-1):
+        if U[i] < (u + tol) and (u + tol) < (U[i+1]):
+            # nbasis[i] = 1.0
+            index = i
 
+        if abs(u - U.max())<tol:
+            if U[i] < (u - tol) and (u - tol) < U[i+1]:
+                # nbasis[i] = 1.0
+                index = i
+    return index
 
-def NURBS2d(u,v,px,w,p,q):
-    T=px.shape
-    Ui=knot(T[0]-1,p)
-    Uj=knot(T[1]-1,q)
-    cx=np.zeros([len(u),len(v)])
-    for i in range(len(u)):
-        for j in range(len(v)):
-            Nn0_i=N0(Ui,u[i])
-            Nn0_j=N0(Uj,v[j])
-            Nn_i=N(Nn0_i,Ui,p,u[i])
-            Nn_j=N(Nn0_j,Uj,q,v[j])
-            cx[i,j]=(Nn_i@(px*w)@Nn_j)/(Nn_i@(w)@Nn_j) 
-    return cx
+####################################################
+#################BASIS FUNCTIONS####################
+####################################################
 
-def ploting2d(cx,cy):
-    plt.plot(cx,cy)
-    return
+def nFunction(U,p,u):
+    m = len(U) - 1
+    for pi in range(p+1):
+        # print("p-Order: ",pi)
+        if pi != 0:
+            nbas = np.zeros((1,len(nbasis[0])-1))
+            for j in range(m-pi):
 
-def ploting3d(cx,cy,cz,*argv):
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.plot3D(cx, cy, cz, 'gray')
-    if argv != ():
-        if argv[0]=='on':
-            if len(argv)==4:
-                ax.plot3D(argv[1],argv[2],argv[3], 'red')
-            elif len(argv)> 4:
-                sys.exit("too much argumets, please delet one or more")
-            else:
-                sys.exit("missing arguments to plot control points")
-                
-def plotingsurf(cx,cy,cz,*argv):
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.contour3D(cx, cy, cz, 50, cmap='binary')
-    if len(argv)==3:
-        ax.plot_wireframe(argv[0], argv[1], argv[2], color='red')
-    ax.set_xlabel('x')
-    ax.set_ylabel('y')
-    ax.set_zlabel('z');
+                num1 = u - U[j]
+                den1 = U[j+pi] - U[j]
+
+                num2 = U[j+pi+1] - u
+                den2 = U[j+pi+1] - U[j+1]
+
+                if abs(den1)<tol:
+                    A = 0.0
+                else:
+                    A = num1/den1
+
+                if abs(den2)<tol:
+                    B = 0.0
+                else:
+                    B = num2/den2
+
+                nbas[0][j] = A*nbasis[0][j] + B*nbasis[0][j+1]
+
+            nbasis = nbas
+        else:
+            nbasis = np.zeros((1,len(U)-1))
+            for i in range(len(nbasis[0])):
+                if U[i] < (u + tol) and (u + tol) < (U[i+1]):
+                    nbasis[0][i] = 1.0
+
+                if abs(u - U.max())<tol:
+                    if U[i] < (u - tol) and (u - tol) < U[i+1]:
+                        nbasis[0][i] = 1.0
+    return nbasis
+
+def derNFunction(U,p,u):
+    m = len(U) - 1
+    dnbasis = nFunction(U,p-1,u)
+    dnbas = np.zeros((1,len(dnbasis[0])-1))
+    for j in range(m-p):
+
+        num1 = 1.0
+        den1 = U[j+p] - U[j]
+
+        num2 = 1.0
+        den2 = U[j+p+1] - U[j+1]
+
+        if abs(den1)<tol:
+            A = 0.0
+        else:
+            A = num1/den1
+
+        if abs(den2)<tol:
+            B = 0.0
+        else:
+            B = num2/den2
+
+        dnbas[0][j] = p*(A*dnbasis[0][j] - B*dnbasis[0][j+1])
+
+    dnbasis = dnbas
+    return dnbasis
+
+def secDerNFunction(U,p,u):
+    m = len(U) - 1
+    d2nbasis = derNFunction(U,p-1,u)
+    d2nbas = np.zeros((1,len(d2nbasis[0])-1))
+    for j in range(m-p):
+
+        num1 = 1.0
+        den1 = U[j+p] - U[j]
+
+        num2 = 1.0
+        den2 = U[j+p+1] - U[j+1]
+
+        if abs(den1)<tol:
+            A = 0.0
+        else:
+            A = num1/den1
+
+        if abs(den2)<tol:
+            B = 0.0
+        else:
+            B = num2/den2
+
+        d2nbas[0][j] = p*(A*d2nbasis[0][j] - B*d2nbasis[0][j+1])
+
+    d2nbasis = d2nbas
+    return d2nbasis
