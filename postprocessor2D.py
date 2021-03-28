@@ -224,13 +224,15 @@ def stressField(numpoints,U,V,p,q,P,w,dtot,dmat,paramnodes,nodeselem):
     # print('v: ',maxv)
 
     # Maximum stress value
-    # maxSx = np.amax(sx)
-    # print('Maximum stress value',maxSx)
+     #maxSx = np.amax(sx)
+     #maxSy = np.amax(sy)
+     #maxSxy = np.amax(sxy)
+     #print('Maximum stress value',maxSx)
     # # Index of the minimum stress value
-    # imaxSx = np.where(sx == np.amax(sx))
-    # listOfCordinates = list(zip(imaxSx[0], imaxSx[1]))
-    # for cord in listOfCordinates:
-    #     print(cord)
+     #imaxSx = np.where(sx == np.amax(sx))
+     #listOfCordinates = list(zip(imaxSx[0], imaxSx[1]))
+     #for cord in listOfCordinates:
+      #   print(cord)
 
     return sx,sy,sxy
 
@@ -269,4 +271,5 @@ def postProcessing(U,V,p,q,P,D,w,paramnodes,nodeselem,dtot,dmat):
     ux,uy = displacementField(numpoints,U,V,p,q,D,w,paramnodes,nodeselem)
     sx,sy,sxy = stressField(numpoints,U,V,p,q,P,w,dtot,dmat,paramnodes,nodeselem)
     # plts.plotting2DField(cx,cy,ux,P,["Ux Displacement Field","[m]"])
-    plts.plotting2DField(cx,cy,sx,P,["Sx Stress Field","[Pa]"])
+    #plts.plotting2DField(cx,cy,sx,P,["Sx Stress Field","[Pa]"])
+    return sx,sy,sxy

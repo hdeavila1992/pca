@@ -5,6 +5,9 @@ import matplotlib.cm as cm
 
 import linearElastoStaticsSolver as linElastStat
 
+
+print('debugScripts.py RUN!!')
+
 def checkingSymmetricMatrix(A):
     check = np.allclose(A, A.T, rtol=1e-2, atol=1e-3)
     if check:
@@ -130,7 +133,7 @@ def calculateAreaAndLength(U,V,w,p,q,P,paramnodes,nodeselem,gaussquad,loadelems,
             aPoint = np.array([uA,vA])
             bPoint = np.array([uB,vB])
 
-            totalLength += elementLength(U,V,w,p,q,px,py,gaussLegendrePoints,gaussLegendreWeights,aPoint,bPoint,paramside)
+            #totalLength +=    elementLength(U,V,w,p,q,px,py,gaussLegendrePoints,gaussLegendreWeights,aPoint,bPoint,paramside)
 
         print("---")
 
@@ -139,4 +142,4 @@ def calculateAreaAndLength(U,V,w,p,q,P,paramnodes,nodeselem,gaussquad,loadelems,
     # print("Total Area")
     # print(totalArea)
 
-    return totalArea,totalLength
+    return totalArea #,totalLength

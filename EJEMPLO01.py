@@ -17,8 +17,8 @@ Py=np.array([0.0,0.0,0.0,0.0,0.0])
 #Numero de puntos de la cuadratura Gaussiana "npg"
 npg=8
 
-print (Px)
-print (Py)
+#print (Px)
+#print (Py)
 #Grado
 p=1
 
@@ -60,7 +60,7 @@ for i in range(len(u)-1):
         NZ[j,:]=bs2.derNFunction(U,p,u_knot[j])
         NZWE[:,j]=np.transpose(bs2.derNFunction(U,p,u_knot[j])*w[j])*(u[i+1]-u[i])*0.5
     M=np.matmul(NZWE,NZ)     
-        #print (bs2.derNFunction(U,p,u_knot[j]))
+    print (M)
     #suma=suma+cx_local@w*(-u[i]+u[i+1])*0.5
     #I=I+npg
 
