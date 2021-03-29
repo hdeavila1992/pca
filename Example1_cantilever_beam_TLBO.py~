@@ -12,10 +12,19 @@ from numpy import random
 
 
 def input_inf(pos_cond,Pinip,x,j):
-	Long=np.size(pos_cond,1)	
+#pos_cond: Indica donde se encuentra los puntos de control libres, es decir los que el algoritmo canbia 
+#x: Poblacion de puntos de control a cambiar 
+#Pinip: Son los puntos de control Isogeometricos 
+	Long=np.size(pos_cond,1)
+	#print(Long)	
+	#print(pos_cond)
+	#print(x)
 	for i in range(Long): 
-		Pinip[pos_cond[0][i],0]=x[j,i]#x[j,(i+1)]  print(x[j,(0+Long)])
-		Pinip[pos_cond[0][i],1]=x[j,i+Long]
+		#Des comentar si se requiere analisis de puntos en x
+		#Pinip[pos_cond[0][i],0]=x[j,i]#x[j,(i+1)]  print(x[j,(0+Long)])
+		#Pinip[pos_cond[0][i],1]=x[j,i+Long]
+		Pinip[pos_cond[0][i],1]=x[j,i]
+		#Descomentar si se requiere analisis de puntos en y
 	return Pinip 	#np.size(pos_cond)
 
 def Extrac_inf(x):
@@ -34,10 +43,22 @@ def Extrac_inf(x):
 		Area_max[j]=totalArea_temp
 	return Area_max,Von_max
 
+
+#Esclisov para el primer problema del articulo
+
+def FPenal():
+	
+
+
 def funcion(x):
 	#[Area_max,Von_max]=Extrac_inf(x)
 	Von_max=np.zeros(np.size(x,0))
 	Area_max=np.zeros(np.size(x,0))
+	Uy_max=np.zeros(np.size(x,0))
+	Ux_max=np.zeros(np.size(x,0))
+	sy_max=np.zeros(np.size(x,0))
+	sx_max=np.zeros(np.size(x,0))
+	sxy_max=np.zeros(np.size(x,0))
 	for j in range(np.size(x,0)):
 		print('Puntos de control iniciales')
 		print (Pinp)
@@ -47,7 +68,19 @@ def funcion(x):
 		print (Pinp)
 		exec(open("RunIt_temp.py").read())
 		Vect_temp=np.loadtxt('Area_data.dat')
+		Vect_temp_sy=np.loadtxt('sy_data.dat')
+		Vect_temp_sx=np.loadtxt('sx_data.dat')
+		Vect_temp_sxy=np.loadtxt('sxy_data.dat')
+		Vect_temp_uy=np.loadtxt('Uy_data.dat')
+		Vect_temp_ux=np.loadtxt('Ux_data.dat')
+		Vect_temp_svm=np.loadtxt('svm_data.dat')
 		Area_max[j]=Vect_temp[1]
+		Von_max[j]=Vect_temp_svm[1]
+		Uy_max[j]=Vect_temp_uy[1]
+		Ux_max[j]=Vect_temp_ux[1]
+		sy_max[j]=Vect_temp_sy[1]
+		sx_max[j]=Vect_temp_sx[1]
+		sxy_max[j]=Vect_temp_sxy[1]
 		print("save successful")		
 	#Vn=open('svm_data.txt').read()
 	print(Area_max)
@@ -55,7 +88,7 @@ def funcion(x):
 	#Area_max[j]=eval (A.readline())
 	#print(Von_max)
 	#print(Area_max)
-	return Area_max
+	return Uy_max
 
 #Constrain function
 
@@ -86,7 +119,9 @@ def Teaching(x,Fx,ps,Tf,Penal):
 	xp=x+Diff_mean_x_matrix
 	print('Posibles valores futuros x_prima=')
 	print(xp)
-	Fp=Fx(xp)+Penal
+	temp_Fx=Fx(xp)
+	temp_Penal=Penal()
+	Fp=temp_Fx+temp_Penal
 	print('Posibles valores futuros de la funcion F(x)')
 	print(Fp)
 	#=========================
@@ -152,7 +187,7 @@ def Learning_fase(Fx,x,Q_pos,P_pos):
 	
 #Datos iniciales
 
-exec(open("first_optimization.py").read())
+exec(open("Example1_cantilever_beam.py").read())
 exec(open("RunIt.py").read())
 
 
@@ -165,20 +200,25 @@ print(Pinp[pos_cond,0])
 print(Pinp[pos_cond,1])
 Pinp_xx=Pinp[pos_cond,0]+0.0
 Pinp_yy=Pinp[pos_cond,1]+0.0
-Pinp_x=np.append(Pinp_xx,Pinp_yy)+0.0	
-	
+#Pinp_x=np.append(Pinp_xx,Pinp_yy)+0.0	
+Pinp_x=Pinp_yy	
 
-Base=np.zeros((2*ps,2))
+New_ps=np.size(Pinp_x)
+
+
+Base=np.zeros((New_ps,2))
 Base[:,0]=1.0
 
 print('La poblacionde puntos x,y iniciales, ORGANIZADO')
 print(Pinp_x)
 
-x=np.zeros( (ps,np.size(Pinp_x,0)) )
+sys.exit()
+
+x=np.zeros( (ps,np.size(Pinp_x,1)) )
 print(x)
 
 for i in range(ps):
-	x[i,:]=Pinp_x+(random.rand(1,2*ps)-0.5)*2.0*rango
+	x[i,:]=Pinp_x+(random.rand(1,New_ps)-0.5)*2.0*rango
 
 print('La poblacion de estudiantes para el algoritmo TLBO es')
 print(x)
@@ -211,7 +251,7 @@ for i in range(1):
 	for j in range(1):
 		Penal=0.0#(10*(g1(x)**2)*c1+10*(g2(x)**2)*c2)
 		print('Penal por trolazo '+str(Penal))
-		(x,F)=Teaching(x,funcion,ps,1,Penal)
+		(x,F)=Teaching(x,funcion,ps,1,FPenal)
 		c1=(g1(x)<=0)*1
 		c2=(g2(x)<=0)*1
 		print('Valor de F despues de '+str(j)+' iteraciones de Teaching')

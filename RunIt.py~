@@ -61,7 +61,7 @@ Kred,Fred,removedDofs,totalDofs = linElastStat.boundaryConditionsEnforcement(K,F
 dtotal,D = linElastStat.solveMatrixEquations(Kred,Fred,totalDofs,removedDofs)
 # print(D)
 
-sx,sy,sxy=post2D.postProcessing(Uinp,Vinp,pinp,qinp,Pinp,D,winp,parametricNodes,nodesInElement,dtotal,dMat)
+sx,sy,sxy,ux,uy=post2D.postProcessing(Uinp,Vinp,pinp,qinp,Pinp,D,winp,parametricNodes,nodesInElement,dtotal,dMat)
 
 
 #print(np.amax(sx))
@@ -69,7 +69,7 @@ sx,sy,sxy=post2D.postProcessing(Uinp,Vinp,pinp,qinp,Pinp,D,winp,parametricNodes,
 #print(np.amax(sxy))
 
 svm = np.sqrt( sx**2 - 2*sx*sy + sy**2 + 3*sxy**2 )
-#print(np.amax(svm))
+print(np.amax(svm))
 print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 print('Flag here <--------------------------------')
 print (Pinp)

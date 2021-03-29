@@ -66,7 +66,7 @@ Kred,Fred,removedDofs,totalDofs = linElastStat.boundaryConditionsEnforcement(K,F
 dtotal,D = linElastStat.solveMatrixEquations(Kred,Fred,totalDofs,removedDofs)
 # print(D)
 
-sx,sy,sxy=post2D.postProcessing(Uinp,Vinp,pinp,qinp,Pinp,D,winp,parametricNodes,nodesInElement,dtotal,dMat)
+sx,sy,sxy,ux,uy=post2D.postProcessing(Uinp,Vinp,pinp,qinp,Pinp,D,winp,parametricNodes,nodesInElement,dtotal,dMat)
 
 
 #print(np.amax(sx))
@@ -76,9 +76,16 @@ sx,sy,sxy=post2D.postProcessing(Uinp,Vinp,pinp,qinp,Pinp,D,winp,parametricNodes,
 svm_temp= np.sqrt( sx**2 - 2*sx*sy + sy**2 + 3*sxy**2 )
 
 
-with open('svm_data.txt', 'a') as f:
-        f.write(str(np.amax(svm_temp))+'\n')
+#with open('svm_data.txt', 'a') as f:
+#        f.write(str(np.amax(svm_temp))+'\n')
 
+
+np.savetxt('sy_data.dat',np.array([0,np.amax(sy)]) )
+np.savetxt('sx_data.dat',np.array([0,np.amax(sx)]) )
+np.savetxt('sxy_data.dat',np.array([0,np.amax(sxy)]) )
+np.savetxt('Uy_data.dat',np.array([0,np.amax(uy)]) )
+np.savetxt('Ux_data.dat',np.array([0,np.amax(ux)]) )
+np.savetxt('svm_data.dat',np.array([0,np.amax(svm)]) )
 
 print(np.amax(svm_temp))
 print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')

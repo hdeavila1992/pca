@@ -270,6 +270,7 @@ def postProcessing(U,V,p,q,P,D,w,paramnodes,nodeselem,dtot,dmat):
     cx,cy = nurbs2DField(numpoints,U,V,p,q,P,w,paramnodes,nodeselem)
     ux,uy = displacementField(numpoints,U,V,p,q,D,w,paramnodes,nodeselem)
     sx,sy,sxy = stressField(numpoints,U,V,p,q,P,w,dtot,dmat,paramnodes,nodeselem)
-    # plts.plotting2DField(cx,cy,ux,P,["Ux Displacement Field","[m]"])
+    #plts.plotting2DField(cx,cy,ux,P,["Ux Displacement Field","[m]"])
+    #plts.plotting2DField(cx,cy,uy,P,["Uy Displacement Field","[m]"])
     #plts.plotting2DField(cx,cy,sx,P,["Sx Stress Field","[Pa]"])
-    return sx,sy,sxy
+    return sx,sy,sxy,ux,uy

@@ -65,8 +65,10 @@ def main():
         Pinp = Pinit
         winp = winit
 
-    displacementConditions = [[0.0,0,"S"]]
-    neumannConditions = [[[1.0,0.0],[1.0,1.0],"normal",tv]]
+    #displacementConditions = [[0.0,0,"S"]]
+    #neumannConditions = [[[1.0,0.0],[1.0,1.0],"normal",tv]]
+    displacementConditions = [[0.0,0,"S"],[0.0,1,"S"]]
+    neumannConditions = [[[0.8133,0.0],[1.0,0.0],"normal",tv]]
 
     parametricNodes,nodesInElement = pre2D.parametricGrid(Uinp,Vinp)
     loadElements,loadFaces = pre2D.loadPreprocessingv2(parametricNodes,nodesInElement,neumannConditions)
